@@ -1,6 +1,6 @@
 
 <div align = "center">
-<img src="./assets/Sprite-0002.png" width = 300px>
+<img src="./assets/Sprite-0002.png" width = 400px>
 </div>
 
 ---
