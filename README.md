@@ -32,7 +32,7 @@ java -version
 If you don't have Java installed, you can download it from the [official website](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html).
 
 
-## ⚙️ Installation
+## 🧮 Installation
 Clone the repository:
 
 ```bash
