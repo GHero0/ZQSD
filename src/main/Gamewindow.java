@@ -17,7 +17,7 @@ public class Gamewindow {
 
     public Gamewindow(Gamepanel gamepanel) {
         jframe = new JFrame();
-        jframe.setTitle("zqsd");
+        jframe.setTitle("ZQSD");
         jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jframe.setResizable(false);
         jframe.add(gamepanel);

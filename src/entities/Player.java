@@ -1,10 +1,8 @@
 package entities;
 
+import static main.Game.SCALE;
 import static utilz.Constants.PlayerConstants.*;
-
-import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import utilz.LoadSave;
 
@@ -15,17 +13,11 @@ public class Player extends Entity {
   private int playerAction = IDLE;
   private boolean left, right, up, down;
   private boolean moving = false;
-  private boolean jumping = false;
-  private boolean falling = false;
   private boolean oriented_left, oriented_right;
 
-  private float playerSpeed = 4.0f;
+  private float playerSpeed = 0.4f * SCALE;
 
-  private float yVelocity = 0f;
-  private final float GRAVITY = 0.3f;
-  private final float MAX_FALL_SPEED = 8.0f;
-  private final float JUMP_FORCE = -12.5f;
-  private final float GROUND_LEVEL = 200f;// 465f;
+
 
   public Player(float x, float y) {
     super(x, y);
@@ -34,7 +26,6 @@ public class Player extends Entity {
 
   public void update() {
     updatePos(); // First apply input logic (including jump)
-    applyGravity(); // Then apply physics (gravity, falling)
     updateAnimationTick(); // Then update animation
     setAnimation(); // Finally, set proper animation state
   }
@@ -42,41 +33,39 @@ public class Player extends Entity {
   private void updatePos() {
     moving = false;
 
+    float xSpeed = 0;
+    float ySpeed = 0;
+
     if (left && !right) {
-      x -= playerSpeed;
+      xSpeed = -playerSpeed;
       oriented_right = false;
       oriented_left = true;
       moving = true;
     } else if (right && !left) {
-      x += playerSpeed;
+      xSpeed = playerSpeed;
       oriented_right = true;
       oriented_left = false;
       moving = true;
     }
-
-    if (jumping && y == GROUND_LEVEL) {
-      yVelocity = JUMP_FORCE;
+    if (up && !down) {
+      ySpeed = -playerSpeed;
+      moving = true;
+    } else if (down && !up) {
+      ySpeed = playerSpeed;
+      moving = true;
     }
 
-  }
-
-  private void applyGravity() {
-    yVelocity += GRAVITY;
-
-    if (yVelocity > MAX_FALL_SPEED)
-      yVelocity = MAX_FALL_SPEED;
-
-    y += yVelocity;
-
-    if (y >= GROUND_LEVEL) {
-      y = GROUND_LEVEL;
-      yVelocity = 0;
-      jumping = false;
-      falling = false;
-    } else {
-      falling = yVelocity > 0;
+    // Normalize diagonal movement
+    if (moving && xSpeed != 0 && ySpeed != 0) {
+      float normalizationFactor = (float) (1 / Math.sqrt(2));
+      xSpeed *= normalizationFactor;
+      ySpeed *= normalizationFactor;
     }
+
+    x += xSpeed;
+    y += ySpeed;
   }
+
 
   private void updateAnimationTick() {
     aniTick++;
@@ -92,13 +81,7 @@ public class Player extends Entity {
   private void setAnimation() {
     int previousAction = playerAction;
 
-    if (y < GROUND_LEVEL) {
-      if (yVelocity < 0) {
-        playerAction = JUMPING; // Going up
-      } else {
-        playerAction = FALLING; // Going down
-      }
-    } else if (moving) {
+    if (moving) {
       playerAction = RUNNING;
     } else {
       playerAction = IDLE;
@@ -111,40 +94,83 @@ public class Player extends Entity {
   }
 
   public void render(Graphics g) {
+    int width = (int) (32 * SCALE);
+    int height = (int) (32 * SCALE);
+
+    // Render pixelated shadow
+    int shadowWidth = (int) (17 * SCALE);
+    if (moving) {
+      shadowWidth = (int) (20 * SCALE);
+    }
+    int shadowHeight = (int) (3 * SCALE);
+    int shadowX = (int) x + (width - shadowWidth) / 2;
+    int shadowY = (int) y + height - (int) (6 * SCALE);
+
+    // Create a pixelated shadow
+    renderPixelatedShadow(g, shadowX, shadowY, shadowWidth, shadowHeight);
+
+    // Render player
     if (oriented_right) {
-      g.drawImage(animations[playerAction][aniIndex], (int) x, (int) y, 200, 200, null);
+      g.drawImage(animations[playerAction][aniIndex], (int) x, (int) y, width, height, null);
     } else if (oriented_left) {
-      g.drawImage(animations[playerAction][aniIndex], (int) x + 200, (int) y, -200, 200, null);
+      g.drawImage(animations[playerAction][aniIndex], (int) x + width, (int) y, -width, height, null);
     } else {
-      g.drawImage(animations[playerAction][aniIndex], (int) x, (int) y, 200, 200, null);
+      g.drawImage(animations[playerAction][aniIndex], (int) x, (int) y, width, height, null);
+    }
+  }
+
+  /**
+   * Renders a pixelated shadow using small rectangles to match pixel art style
+   */
+  private void renderPixelatedShadow(Graphics g, int x, int y, int width, int height) {
+    // Define pixel size for the shadow
+    int pixelSize = (int) (1 * SCALE); // Adjust this value for more/less pixelation
+
+    // Semi-transparent black for shadow
+    g.setColor(new java.awt.Color(0, 0, 0, 80));
+
+    // Calculate the elliptical shape using a simple algorithm
+    double a = width / 2.0; // horizontal radius
+    double b = height / 2.0; // vertical radius
+    int centerX = x + width / 2;
+    int centerY = y + height / 2;
+
+    // Draw pixelated oval by filling in squares
+    for (int py = 0; py < height; py += pixelSize) {
+      for (int px = 0; px < width; px += pixelSize) {
+        // Calculate if this pixel should be part of the oval
+        // Get actual position relative to center
+        double actualX = x + px + pixelSize / 2.0 - centerX;
+        double actualY = y + py + pixelSize / 2.0 - centerY;
+
+        // Normalize to ellipse equation
+        double normalizedX = actualX / a;
+        double normalizedY = actualY / b;
+
+        // If point is inside the ellipse (x²/a² + y²/b² ≤ 1)
+        if (normalizedX * normalizedX + normalizedY * normalizedY <= 1.0) {
+          g.fillRect(x + px, y + py, pixelSize, pixelSize);
+        }
+      }
     }
   }
 
   private void loadAnimation() {
     BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
+    int spriteWidth = 32;
+    int spriteHeight = 32;
     animations = new BufferedImage[4][10];
 
     for (int j = 0; j < animations.length; j++) {
       for (int i = 0; i < animations[j].length; i++) {
-        animations[j][i] = img.getSubimage(i * 32, j * 32, 32, 32);
+        animations[j][i] = img.getSubimage(i * spriteWidth, j * spriteHeight, spriteWidth, spriteHeight);
       }
     }
   }
 
-  public void setJumping(boolean jumping) {
-    this.jumping = jumping;
-  }
 
-  public void setFalling(boolean falling) {
-    this.falling = falling;
-  }
-
-  // Input handling
-  public void setUp(boolean up) {
+ public void setUp(boolean up) {
     this.up = up;
-    if (up && y == GROUND_LEVEL) {
-      jumping = true;
-    }
   }
 
   public void setDown(boolean down) {

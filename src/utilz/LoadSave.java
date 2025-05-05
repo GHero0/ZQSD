@@ -10,6 +10,7 @@ public class LoadSave {
 
     public static final String PLAYER_ATLAS = "Cat_character_sheet.png";
     public static final String ICON_ATLAS = "Keyboard_Extras.png";
+    public static final String LEVEL_SPRITE = "Keyboard_Letters.png";
 
     
     public static BufferedImage GetSpriteAtlas(String filename){
