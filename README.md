@@ -3,8 +3,6 @@
 <img src="./assets/Sprite-0002.png" width = 400px>
 </div>
 
----
-
 ZQSD is a platformer game developped as a java software projet at [ENSSAT](https://enssat.fr/) in 2025. The goal of this project is mainly to learn how to use Java while still having fun with it. As so the game uses only Swing and no external libraries. 
 
 **Bellow, you'll find an installation guide to install the project.** But feel free to fork the project and make your own game with it. 
