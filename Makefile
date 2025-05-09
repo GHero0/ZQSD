@@ -41,9 +41,17 @@ docs:
 
 # Run the main class
 .PHONY: run
-run: compile
+run: run-windows
+
+.PHONY: run-windows
+run-windows: compile
 	@echo "Running $(MAIN_CLASS)"
 	powershell.exe -Command "& { java -cp '$(BIN_DIR);$(ASSETS_DIR)' $(MAIN_CLASS) }"
+
+.PHONY: run-linux
+run-linux: compile
+	@echo "Running $(MAIN_CLASS)"
+	java -cp '$(BIN_DIR):$(ASSETS_DIR)' $(MAIN_CLASS)
 
 
 # Clean up generated files

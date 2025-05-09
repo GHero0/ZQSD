@@ -55,32 +55,18 @@ make compile
 
 3. Run the game:
 
-If you're on Windows, the Makefile will work just fine. On Linux, you will need to modify the Makefile as follows:
-
-From : 
-
-```makefile
-# Run the main class
-.PHONY: run
-run: compile
-	@echo "Running $(MAIN_CLASS)"
-	powershell.exe -Command "& { java -cp '$(BIN_DIR);$(ASSETS_DIR)' $(MAIN_CLASS) }"
+If you are using Linux, you can run the game with the following command:
+```
+make run-linux
 ```
 
-To : 
-
-```makefile
-# Run the main class
-.PHONY: run
-run: compile
-	@echo "Running $(MAIN_CLASS)"
-	java -cp '$(BIN_DIR):$(ASSETS_DIR)' $(MAIN_CLASS)
-```
-
-Finally to run the game, use the following command:
-
-
+If you're on Windows, the following command will run the game:
 ```bash
+make run-windows
+```
+
+Alternatively, you can use:
+```
 make run
 ```
 
